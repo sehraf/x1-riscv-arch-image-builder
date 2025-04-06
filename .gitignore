@@ -1,0 +1,4 @@
+build/*
+mnt/*
+output/*
+archriscv-*.tar.zst
