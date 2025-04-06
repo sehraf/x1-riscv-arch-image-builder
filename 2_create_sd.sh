@@ -108,7 +108,7 @@ elif [ "${BOOT_METHOD}" = 'extlinux' ]; then
     (
         echo "label default
         linux   /Image
-        append  earlycon=sbi console=ttyS0,115200 console=ttyS9,115200 console=tty1 root=/dev/mmcblk0p2 rootwait" # not suse if `ttyS9` is correct
+        append  earlycon=sbi console=ttyS0,115200 console=ttyS9,115200 console=tty1 root=/dev/mmcblk0p2 rootwait" # not sure if `ttyS9` is correct
     ) >extlinux.conf
     ${SUDO} mv extlinux.conf "${MNT}/boot/extlinux/extlinux.conf"
 fi
