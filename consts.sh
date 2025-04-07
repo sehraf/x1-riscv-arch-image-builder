@@ -37,7 +37,7 @@ export SOURCE_KERNEL_CONFIG='https://raw.githubusercontent.com/orangepi-xunlong/
 
 # pinned commits (no notice when things change)
 export COMMIT_UBOOT='89bff4a7e4cadfb5f130edb1ec44c39bff20a427' # equals v2022.10-ky 28.03.2025
-export COMMIT_KERNEL='ae9e974d3e19f460b6397bfe8f0f1417a073ce05'
+export COMMIT_KERNEL='ae9e974d3e19f460b6397bfe8f0f1417a073ce05' # euqals orange-pi-6.6-ky 28.03.2025
 # use this (set to something != 0) to override the check
 export IGNORE_COMMITS=0
 

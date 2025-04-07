@@ -1,5 +1,5 @@
-# Image Builder for Archlinux on an Ky X1 (supposedly Spacemit K1) OrangePI RV2
-These scripts compile, copy, bake, unpack and flash a [ready](https://wiki.archlinux.org/title/installation_guide#Configure_the_system) to use RISC-V Archlinux.  
+# Image Builder for Archlinux on a Ky X1 (Spacemit K1) OrangePI RV2
+These scripts compile, copy, bake, unpack and flash a [ready](https://wiki.archlinux.org/title/installation_guide#Configure_the_system) to use RISC-V Archlinux.
 *With "ready to use" i mean that it boots, you still need to configure everything!*
 
 Based on https://github.com/sehraf/d1-riscv-arch-image-builder
@@ -24,7 +24,7 @@ Simply loop it using `sudo losetup -f -P <file>` and then use `/dev/loopX` as th
 
 ## Notes
 The second script requires `arch-install-scripts`, `qemu-user-static-bin` (AUR) and `binfmt-qemu-static` (AUR) for an architectural chroot.
-If you don't want to use/do this, change `USE_CHROOT` to `0` in `consts.sh`.  
+If you don't want to use/do this, change `USE_CHROOT` to `0` in `consts.sh`.
 *Keep in mind, that this is just a extracted rootfs with **no** configuration. You probably want to update the system, install an editor and take care of network access/ssh*
 
 Some commits are pinned, this means that in the future this script might stop working since often a git HEAD is checked out. This is intentional.
@@ -34,6 +34,27 @@ The second script uses `sudo` for root access. Like any random script from a ran
 Things are rebuild whenever the corresponding `output/<file>` is missing. For example, the kernel is rebuilt when there is no `Image` file.
 
 # Status
+## 07.04.2025
+When providing `ky/x1_orangepi-rv2.dtb` (as `x1.dtb`) the console works (`console=ttyS0,115200` is correct). UART5, 8 and 9 are disabled (requires overlays).
+
+Kernel throws a bunch of `kernfs: can not remove 'xyz', no directory` and `refcount_t: underflow; use-after-free.`, then hangs:
+```
+[   30.045990] rcu: INFO: rcu_preempt detected stalls on CPUs/tasks:
+[   30.052194] rcu:     0-...0: (12 GPs behind) idle=57bc/1/0x4000000000000002 softirq=73/73 fqs=2625
+[   30.061015] rcu:     3-...0: (0 ticks this GP) idle=b7f4/1/0x4000000000000000 softirq=101/101 fqs=2625
+[   30.070205] rcu:     (detected by 4, t=5252 jiffies, g=-827, q=1 ncpus=8)
+[   30.076822] Task dump for CPU 0:
+[   30.080091] task:swapper/0       state:R  running task     stack:0     pid:0     ppid:0      flags:0x00000008
+[   30.090155] Call Trace:
+[   30.092620] [<ffffffff80f2e8e2>] __schedule+0x338/0xa90
+[   30.097921] [<ffffffff80f2ce38>] default_idle_call+0x24/0xda
+[   30.103656] Task dump for CPU 3:
+[   30.106914] task:swapper/0       state:R  running task     stack:0     pid:1     ppid:0      flags:0x0000000a
+[   30.116974] Call Trace:
+[   30.119449] [<ffffffff80f2e8e2>] __schedule+0x338/0xa90
+[   30.124751] [<ffffffff806fd0e8>] __devm_reset_control_get+0x42/0x9c
+```
+
 
 ## 06.04.2025
 Currently it is not fully working. The kernel gets booted, but seems to hang at some point. Console is lost once the kernel switches away from `bootconsole`...
