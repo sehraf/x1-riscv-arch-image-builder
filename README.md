@@ -25,7 +25,8 @@ Simply loop it using `sudo losetup -f -P <file>` and then use `/dev/loopX` as th
 ## Notes
 The second script requires `arch-install-scripts`, `qemu-user-static-bin` (AUR) and `binfmt-qemu-static` (AUR) for an architectural chroot.
 If you don't want to use/do this, change `USE_CHROOT` to `0` in `consts.sh`.
-*Keep in mind, that this is just a extracted rootfs with **no** configuration. You probably want to update the system, install an editor and take care of network access/ssh*
+
+*Keep in mind, that this is just a extracted rootfs with __no__ configuration. You probably want to update the system, install an editor and take care of network access/ssh*
 
 Some commits are pinned, this means that in the future this script might stop working since often a git HEAD is checked out. This is intentional.
 
