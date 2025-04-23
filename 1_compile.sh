@@ -157,4 +157,12 @@ if [ ! -f "${OUT_DIR}/Image" ] || [ ! -f "${OUT_DIR}/Image.gz" ]; then
     mkdir ${DIR}-modules
     make ARCH="${ARCH}" INSTALL_MOD_PATH="../${DIR}-modules" KERNELRELEASE="${KERNEL_RELEASE}" -C ${DIR}-build modules_install
     mv ${DIR}-modules/lib/modules "${OUT_DIR}"
+
+    # copy DTBs
+    cp -a "${DIR}-build/arch/riscv/boot/dts" "${OUT_DIR}"/dtbs
+    find "${OUT_DIR}"/dtbs -name '*.dts' -delete
+fi
+
+if [ ! -f "${OUT_DIR}/esos.elf" ]; then
+    curl "${SOURCE_FIRMWARE_ESOS}" -o "${OUT_DIR}/esos.elf"
 fi

@@ -50,7 +50,7 @@ if [ "${USE_CHROOT}" != 0 ]; then
 fi
 check_sd_card_is_block_device "${DEVICE}"
 check_root_fs
-for FILE in bootinfo_sd.bin FSBL.bin u-boot-env-default.bin u-boot-opensbi.itb Image.gz Image; do
+for FILE in bootinfo_sd.bin FSBL.bin u-boot-env-default.bin u-boot-opensbi.itb Image.gz Image esos.elf; do
     check_required_file "${OUT_DIR}/${FILE}"
 done
 # shellcheck disable=SC2043
@@ -93,6 +93,12 @@ ${SUDO} tar -xv --zstd -f "${ROOT_FS}" -C "${MNT}"
 # install kernel and modules
 KERNEL_RELEASE=$(ls output/modules)
 ${SUDO} cp "${OUT_DIR}/Image.gz" "${OUT_DIR}/Image" "${MNT}/boot/"
+${SUDO} cp -a "${OUT_DIR}/dtbs" "${MNT}/boot/"
+# shellcheck disable=SC3044
+pushd "${MNT}/boot/dtbs"
+${SUDO} ln -s ky/x1_orangepi-rv2.dtb x1.dtb
+# shellcheck disable=SC3044
+popd
 
 ${SUDO} mkdir -p "${MNT}/lib/modules"
 ${SUDO} cp -a "${OUT_DIR}/modules/${KERNEL_RELEASE}" "${MNT}/lib/modules"
@@ -107,8 +113,11 @@ elif [ "${BOOT_METHOD}" = 'extlinux' ]; then
     ${SUDO} mkdir -p "${MNT}/boot/extlinux"
     (
         echo "label default
-        linux   /Image
-        append  earlycon=sbi console=ttyS0,115200 console=ttyS9,115200 console=tty1 root=/dev/mmcblk0p2 rootwait" # not sure if `ttyS9` is correct
+    devicetreedir   /dtbs/
+    # fdtoverlays     /dtbs/ky/overlays/x1-uart9.dtbo
+    linux           /Image
+    initrd          /initramfs.img
+    append          earlycon=sbi console=ttyS0,115200 console=tty1 root=/dev/mmcblk0p2 rootwait"
     ) >extlinux.conf
     ${SUDO} mv extlinux.conf "${MNT}/boot/extlinux/extlinux.conf"
 fi
@@ -127,7 +136,34 @@ ${SUDO} mv fstab "${MNT}/etc/fstab"
 echo 'orangepirv2' >hostname
 ${SUDO} mv hostname "${MNT}/etc/"
 
-# done
+# install firmware (esos.elf)
+${SUDO} mkdir -p "${MNT}/lib/firmware/"
+${SUDO} cp "${OUT_DIR}/esos.elf" "${MNT}/lib/firmware/"
+
+# setup initramfs
+# NOTE: booster is detecting the kernel as ${KERNEL_RELEASE} with a + while booting?!
+# echo 'extra_files: /lib/firmware/esos.elf' >booster.yaml
+# ${SUDO} mv booster.yaml "${MNT}/etc/booster.yaml"
+# ${SUDO} arch-chroot "${MNT}" pacman -Sy --noconfirm booster
+# ${SUDO} arch-chroot "${MNT}" booster build --kernel-version="${KERNEL_RELEASE}" --compression=none /boot/initramfs.img
+${SUDO} arch-chroot "${MNT}" pacman -Sy --noconfirm dracut busybox
+echo 'install_items+=" /lib/firmware/esos.elf "' >firmware.conf
+${SUDO} mv firmware.conf "${MNT}/etc/dracut.conf.d/firmware.conf"
+${SUDO} arch-chroot "${MNT}" dracut -f --no-early-microcode --no-kernel -m "busybox" /boot/initramfs.img generic
+
+if [ "${SETUP_LAN}" != 0]; then
+    (
+        echo '[Match]
+Name=end*
+
+[Network]
+DHCP=yes
+DNSSEC=no'
+    ) >end.network
+    ${SUDO} mv end.network "${MNT}/etc/systemd/network/end.network"
+    ${SUDO} arch-chroot "${MNT}" systemctl enable systemd-networkd systemd-resolved systemd-timesyncd
+fi
+
 if [ "${USE_CHROOT}" != 0 ]; then
     echo ''
     echo 'Done! Now configure your new Archlinux!'
@@ -135,7 +171,7 @@ if [ "${USE_CHROOT}" != 0 ]; then
     echo 'You might want to update and install an editor as well as configure any network'
     echo ' -> https://wiki.archlinux.org/title/installation_guide#Configure_the_system'
     echo ''
-    ${SUDO} arch-chroot "${MNT}" || true
+    ${SUDO} arch-chroot "${MNT}" || true # this fails sometimes ?!
 else
     echo ''
     echo 'Done!'
