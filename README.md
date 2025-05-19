@@ -40,6 +40,10 @@ The second script uses `sudo` for root access. Like any random script from a ran
 Things are rebuild whenever the corresponding `output/<file>` is missing. For example, the kernel is rebuilt when there is no `Image` file.
 
 # Status
+
+## 23.04.2025
+The remaining issue was that the firmware file `esos.elf` was missing. It is required during boot and therefore must be provided via initramfs.
+
 ## 07.04.2025
 When providing `ky/x1_orangepi-rv2.dtb` (as `x1.dtb`) the console works (`console=ttyS0,115200` is correct). UART5, 8 and 9 are disabled (requires overlays).
 
