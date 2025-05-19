@@ -11,6 +11,11 @@ Based on https://github.com/sehraf/d1-riscv-arch-image-builder
 - kernel based on https://github.com/orangepi-xunlong/linux-orangepi.git
 - RootFS based on https://archriscv.felixc.at (root password is `archriscv`)
 
+### Prebuilds
+- U-Boot: https://github.com/cwt-opi-rv2/u-boot-ky_x1
+- Kernel: https://github.com/cwt-opi-rv2/linux-cwt-orangepi-ky
+- Firmware: https://github.com/cwt-opi-rv2/ky_x1-firmware
+
 ## How to build
 1. Install requirements: `pacman -Sy riscv64-linux-gnu-gcc swig cpio python3 python-setuptools base-devel bc`
    1. If you want to `chroot` into the RISC-V image, you also need `arch-install-scripts qemu-user-static qemu-user-static-binfmt`
